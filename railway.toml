@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+# Exécute la génération du digest avec tsx
+startCommand = "npx tsx src/generate.ts"
+restartPolicyType = "never"

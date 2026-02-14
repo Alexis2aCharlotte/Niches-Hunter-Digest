@@ -1,0 +1,41 @@
+{
+  "name": "niches-hunter-digest",
+  "version": "1.0.0",
+  "description": "Weekly Digest Newsletter for Niches Hunter - Summarizes recent daily newsletters into a teaser digest for free subscribers",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "echo 'No build needed - using tsx'",
+    "start": "tsx src/index.ts",
+    "generate": "tsx src/generate.ts"
+  },
+  "keywords": [
+    "newsletter",
+    "digest",
+    "niches",
+    "app-store",
+    "indie-dev"
+  ],
+  "author": "Niches Hunter",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "express": "^4.18.2",
+    "resend": "^2.1.0",
+    "node-telegram-bot-api": "^0.64.0",
+    "openai": "^4.24.0",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "tsx": "^4.7.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.5",
+    "@types/node-telegram-bot-api": "^0.64.1",
+    "@types/cors": "^2.8.17",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
