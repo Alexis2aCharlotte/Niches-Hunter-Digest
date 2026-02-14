@@ -32,8 +32,8 @@ export interface HiddenNiche {
 }
 
 export interface DigestAnalysis {
-  subject: string;       // Email subject line — mysterious, intriguing
-  stats_line: string;    // e.g. "We scanned 2,847 apps across 14 countries this week."
+  subject: string;       // Email subject line, mysterious, intriguing
+  intro: string;         // 1-2 short sentences. Casual, sets the scene. No "we scanned X apps" crap.
   featured: FeaturedNiche;
   hidden: HiddenNiche[]; // 2-4 hidden niches
 }
@@ -60,54 +60,64 @@ ${combinedContent}
 
 === THE STRATEGY ===
 
-We show ONE niche partially (the "featured" niche) — enough to prove the data is real and valuable, but NOT enough to act on. Then we list the OTHER niches as hidden/redacted to create curiosity.
+We show ONE niche partially (the "featured" niche). Enough to prove the data is real and valuable, but NOT enough to act on. Then we list the OTHER niches as hidden/redacted to create curiosity.
+
+=== WRITING STYLE ===
+- NEVER use em dashes (—). Use periods, commas, or line breaks instead.
+- Write like a human, not an AI. Short sentences. Conversational.
+- When mentioning different apps, PUT EACH APP ON ITS OWN LINE using \\n. This is critical for readability.
+- Example hook format:
+  "AI photo tools are blowing up right now.\\n\\nPose: AI Photo Video Generator just hit #1 in US Photo & Video.\\nShots is ranking #13 in GB with a tiny team.\\n\\nThese small teams found something. And the top apps all share the same weakness."
+- Keep it punchy. No walls of text.
+
+=== RULES FOR INTRO ===
+- 1-2 short casual sentences that set the scene
+- Do NOT say "we scanned X apps across Y countries". That's boring and robotic.
+- Instead, be casual and intriguing: "Interesting week in the App Store.", "A few patterns caught our attention this week.", "Something's happening in a niche nobody's watching."
+- Keep it short and human
 
 === RULES FOR THE FEATURED NICHE ===
 - Pick the MOST compelling niche from the newsletters (the one with the best story)
-- Write a 2-3 sentence "hook" that tells a STORY: mention specific numbers (ranks, countries), mention if it's a solo dev or small team, mention how fast it's growing
+- Write a hook that tells a STORY with specific numbers (ranks, countries, dev size)
+- SEPARATE each app mention on its own line using \\n
 - Do NOT reveal: the gap, the strategy, the weakness to exploit, the action steps
-- End the hook with something like "There's a clear gap nobody is exploiting yet." or "And the top apps all share the same weakness." — intrigue WITHOUT details
-- The "proof" is one specific data point: app name, rank, country flag, dev size
+- End with intrigue: "There's a clear gap nobody is exploiting yet." or "And the top apps all share the same weakness."
+- The "proof" is one specific data point: app name, rank, country flag, dev size. NO em dashes.
 
 === RULES FOR HIDDEN NICHES ===
 - Extract 2-4 OTHER niches from the newsletters
 - For each, write a SHORT hint (max 8 words) that teases WITHOUT naming the niche
-- Examples: "3 apps ranking, low competition", "Solo dev proving the market", "Untapped in EU markets", "New category, growing fast"
-- Do NOT include the niche name — it will be displayed as "████████" in the email
+- Examples: "3 apps ranking, low competition", "Solo dev proving the market", "Growing fast in new markets", "New category, zero competition"
+- Do NOT include the niche name
 
 === RULES FOR SUBJECT LINE ===
-- Must be mysterious and intriguing
-- Examples: "A niche is blowing up right now 👀", "We found something interesting this week", "This solo dev cracked the Top 50"
-- Max 50 characters
+- Mysterious and intriguing, max 50 characters, with emoji
+- Examples: "A niche is blowing up right now 👀", "This solo dev cracked the Top 50", "Nobody's talking about this niche"
 - Must make people OPEN the email
-
-=== RULES FOR STATS LINE ===
-- One sentence with impressive numbers about how much data was analyzed
-- Use numbers from the newsletters if available, otherwise estimate realistically
-- Example: "We scanned 2,847 apps across 14 countries this week."
-- This builds credibility
 
 === OUTPUT FORMAT (JSON ONLY) ===
 {
-  "subject": "Mysterious email subject, max 50 chars, with emoji",
-  "stats_line": "We scanned X apps across Y countries this week.",
+  "subject": "Mysterious subject, max 50 chars, with emoji",
+  "intro": "1-2 casual short sentences. No 'we scanned X apps'. Be human.",
   "featured": {
     "emoji": "🔥",
     "name": "Simple niche name (2-4 words)",
-    "hook": "2-3 sentences. Tell a compelling story with numbers. End with intrigue about an unexploited gap. Do NOT reveal the strategy.",
-    "proof": "AppName, a solo dev, is #12 in 🇺🇸 — launched just 3 months ago."
+    "hook": "Use \\n for line breaks between app mentions. Tell a story with numbers. End with intrigue. NO em dashes.",
+    "proof": "AppName, a solo dev, is #12 in 🇺🇸. Launched just 3 months ago."
   },
   "hidden": [
     { "hint": "3 apps ranking, low competition" },
     { "hint": "Solo dev proving the market" },
-    { "hint": "Untapped in EU markets" }
+    { "hint": "Growing fast in new markets" }
   ]
 }
 
-IMPORTANT:
+CRITICAL RULES:
+- ZERO em dashes (—) anywhere in the output. Use periods or commas instead.
+- Use \\n for line breaks in the hook when switching between app mentions
 - Write EVERYTHING in English
 - Output valid JSON only. No markdown, no code blocks.
-- The featured niche hook must be compelling but INCOMPLETE — the reader must feel "I need to see more"
+- The hook must be compelling but INCOMPLETE
 - Hidden niche hints must NOT contain the niche name`;
 
   const MAX_RETRIES = 3;

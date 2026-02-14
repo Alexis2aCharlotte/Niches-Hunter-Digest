@@ -38,7 +38,8 @@ export function generateDigestHTML(digest: DigestAnalysis): string {
     day: 'numeric' 
   });
 
-  const totalNiches = 1 + digest.hidden.length;
+  // Convert \n in hook to <br> for HTML rendering
+  const formattedHook = digest.featured.hook.replace(/\n/g, '<br>');
 
   // Generate hidden niche rows
   let hiddenNichesHtml = '';
@@ -83,7 +84,7 @@ export function generateDigestHTML(digest: DigestAnalysis): string {
                       This week in the App Store
                     </h1>
                     <p style="margin:0;font-size:15px;color:#555;line-height:1.6;">
-                      ${digest.stats_line}
+                      ${digest.intro}
                     </p>
                   </td>
                 </tr>
@@ -116,8 +117,8 @@ export function generateDigestHTML(digest: DigestAnalysis): string {
                 <!-- Hook -->
                 <tr>
                   <td style="padding:24px 28px 16px;">
-                    <p style="margin:0;font-size:15px;color:#333;line-height:1.7;">
-                      ${digest.featured.hook}
+                    <p style="margin:0;font-size:15px;color:#333;line-height:1.8;">
+                      ${formattedHook}
                     </p>
                   </td>
                 </tr>
@@ -196,10 +197,10 @@ export function generateDigestHTML(digest: DigestAnalysis): string {
                       ⚡ Don't miss the next one
                     </div>
                     <p style="font-size:18px;color:#fff;font-weight:600;line-height:1.5;margin:0 0 8px;">
-                      Get ${totalNiches} niches daily, not ${totalNiches} per week.
+                      2 niches. 3 apps. Every single day.
                     </p>
                     <p style="font-size:14px;color:#999;line-height:1.5;margin:0 0 24px;">
-                      Every day, Pro members get the full playbook:
+                      Pro members get the full playbook:
                     </p>
                     <!-- What's locked -->
                     <div style="background:#1a1a1a;border-radius:8px;padding:14px 16px;margin-bottom:24px;border:1px dashed #333;text-align:left;">
