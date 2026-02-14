@@ -18,19 +18,24 @@ function getOpenAI(): OpenAI {
 // TYPES - Structure du digest
 // ============================================
 
-export interface DigestNiche {
+/** The one niche we reveal (partially) */
+export interface FeaturedNiche {
   emoji: string;
   name: string;
-  teaser: string;        // 1-2 sentences hook
-  proof: string;         // 1 app name + rank as social proof
-  potential: string;     // "High" / "Very High" etc.
+  hook: string;          // 2-3 sentences: intriguing story, numbers, but NO strategy
+  proof: string;         // "AppName, a solo dev, is #X in Country 🇫🇷 — launched 3 months ago."
+}
+
+/** A hidden niche (name redacted, only a teasing hint) */
+export interface HiddenNiche {
+  hint: string;          // Short teasing hint WITHOUT revealing the niche name. e.g. "3 apps ranking, low competition"
 }
 
 export interface DigestAnalysis {
-  subject: string;       // Email subject line
-  intro: string;         // 1-2 sentence intro
-  niches: DigestNiche[]; // 3-6 niches (from 2-3 newsletters)
-  cta_text: string;      // CTA button text
+  subject: string;       // Email subject line — mysterious, intriguing
+  stats_line: string;    // e.g. "We scanned 2,847 apps across 14 countries this week."
+  featured: FeaturedNiche;
+  hidden: HiddenNiche[]; // 2-4 hidden niches
 }
 
 // ============================================
@@ -38,60 +43,72 @@ export interface DigestAnalysis {
 // ============================================
 
 /**
- * Generate a digest summary from recent newsletter HTML content
- * Takes raw HTML newsletters and creates a teaser digest
+ * Generate a FOMO digest from recent newsletter HTML content
+ * Shows 1 niche partially + hides the others behind blurred names
  */
 export async function generateDigest(newsletterContents: string[]): Promise<DigestAnalysis> {
-  const today = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-
   // Combine newsletter content for context
   const combinedContent = newsletterContents
     .map((content, i) => `=== NEWSLETTER ${i + 1} ===\n${content}`)
     .join('\n\n');
 
-  const prompt = `You are writing a DIGEST email for Niches Hunter, a service that finds profitable app niches for indie developers.
+  const prompt = `You are a COPYWRITER for Niches Hunter, a service that finds profitable app niches for indie developers.
 
-I'm giving you ${newsletterContents.length} recent daily newsletters (in HTML). Your job is to extract the niches mentioned and create a SHORT, TEASER digest that makes readers want to upgrade to Pro for the full analysis.
+I'm giving you ${newsletterContents.length} recent daily newsletters (in HTML). Your job is to create a FOMO-inducing digest email that makes free subscribers desperate to upgrade to Pro.
 
 ${combinedContent}
 
-=== YOUR TASK ===
+=== THE STRATEGY ===
 
-Create a digest that:
-1. Lists each niche from the newsletters as a SHORT teaser (not the full analysis!)
-2. Gives just enough info to be intriguing but NOT enough to act on
-3. Makes the reader think "I need to see the full analysis"
+We show ONE niche partially (the "featured" niche) — enough to prove the data is real and valuable, but NOT enough to act on. Then we list the OTHER niches as hidden/redacted to create curiosity.
 
-=== RULES ===
-- Extract ALL niches from the newsletters (should be 3-6 total from 2-3 newsletters)
-- Each niche teaser is MAX 2 sentences - be punchy and intriguing
-- Include 1 proof point per niche (app name + rank) to show it's real data
-- Do NOT include: the gap, the strategy, the full app insights, or the action steps
-- Write EVERYTHING in English
-- Be conversational, like texting a friend about a hot deal
-- The "potential" field should be a short label like "High", "Very High", "Massive", "Growing Fast"
+=== RULES FOR THE FEATURED NICHE ===
+- Pick the MOST compelling niche from the newsletters (the one with the best story)
+- Write a 2-3 sentence "hook" that tells a STORY: mention specific numbers (ranks, countries), mention if it's a solo dev or small team, mention how fast it's growing
+- Do NOT reveal: the gap, the strategy, the weakness to exploit, the action steps
+- End the hook with something like "There's a clear gap nobody is exploiting yet." or "And the top apps all share the same weakness." — intrigue WITHOUT details
+- The "proof" is one specific data point: app name, rank, country flag, dev size
+
+=== RULES FOR HIDDEN NICHES ===
+- Extract 2-4 OTHER niches from the newsletters
+- For each, write a SHORT hint (max 8 words) that teases WITHOUT naming the niche
+- Examples: "3 apps ranking, low competition", "Solo dev proving the market", "Untapped in EU markets", "New category, growing fast"
+- Do NOT include the niche name — it will be displayed as "████████" in the email
+
+=== RULES FOR SUBJECT LINE ===
+- Must be mysterious and intriguing
+- Examples: "A niche is blowing up right now 👀", "We found something interesting this week", "This solo dev cracked the Top 50"
+- Max 50 characters
+- Must make people OPEN the email
+
+=== RULES FOR STATS LINE ===
+- One sentence with impressive numbers about how much data was analyzed
+- Use numbers from the newsletters if available, otherwise estimate realistically
+- Example: "We scanned 2,847 apps across 14 countries this week."
+- This builds credibility
 
 === OUTPUT FORMAT (JSON ONLY) ===
 {
-  "subject": "Catchy email subject with emoji, max 50 chars. Teaser style. Example: '4 niches you're missing this week 👀'",
-  "intro": "1-2 sentences. Set the scene: how many niches were spotted, why they matter. Be casual and exciting.",
-  "niches": [
-    {
-      "emoji": "🎯",
-      "name": "Simple niche name (2-4 words)",
-      "teaser": "1-2 sentences max. What's the opportunity WITHOUT giving away the strategy. End with intrigue.",
-      "proof": "AppName is #X in CountryFlag — proof this market is real.",
-      "potential": "High"
-    }
-  ],
-  "cta_text": "Short CTA text for the upgrade button, max 6 words. Example: 'Get the full playbook'"
+  "subject": "Mysterious email subject, max 50 chars, with emoji",
+  "stats_line": "We scanned X apps across Y countries this week.",
+  "featured": {
+    "emoji": "🔥",
+    "name": "Simple niche name (2-4 words)",
+    "hook": "2-3 sentences. Tell a compelling story with numbers. End with intrigue about an unexploited gap. Do NOT reveal the strategy.",
+    "proof": "AppName, a solo dev, is #12 in 🇺🇸 — launched just 3 months ago."
+  },
+  "hidden": [
+    { "hint": "3 apps ranking, low competition" },
+    { "hint": "Solo dev proving the market" },
+    { "hint": "Untapped in EU markets" }
+  ]
 }
 
-IMPORTANT: Output valid JSON only. No markdown, no code blocks.`;
+IMPORTANT:
+- Write EVERYTHING in English
+- Output valid JSON only. No markdown, no code blocks.
+- The featured niche hook must be compelling but INCOMPLETE — the reader must feel "I need to see more"
+- Hidden niche hints must NOT contain the niche name`;
 
   const MAX_RETRIES = 3;
   
@@ -102,7 +119,7 @@ IMPORTANT: Output valid JSON only. No markdown, no code blocks.`;
       const response = await getOpenAI().chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are a newsletter copywriter. Always respond with valid JSON only. No markdown, no code blocks, no extra text.' },
+          { role: 'system', content: 'You are a newsletter copywriter specialized in FOMO and curiosity-driven content. Always respond with valid JSON only. No markdown, no code blocks, no extra text.' },
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
@@ -121,14 +138,20 @@ IMPORTANT: Output valid JSON only. No markdown, no code blocks.`;
       const result = JSON.parse(jsonText) as DigestAnalysis;
       
       // Validate
-      if (!result.niches || result.niches.length === 0) {
-        throw new Error('No niches in digest response');
+      if (!result.featured || !result.featured.name || !result.featured.hook) {
+        throw new Error('Missing featured niche data');
       }
-      if (!result.subject || !result.intro) {
-        throw new Error('Missing subject or intro');
+      if (!result.hidden || result.hidden.length === 0) {
+        throw new Error('No hidden niches');
+      }
+      if (!result.subject) {
+        throw new Error('Missing subject');
       }
       
-      console.log(`   ✅ Digest generated: ${result.niches.length} niches, subject: "${result.subject}"`);
+      console.log(`   ✅ Digest generated:`);
+      console.log(`      Featured: ${result.featured.emoji} ${result.featured.name}`);
+      console.log(`      Hidden: ${result.hidden.length} niches`);
+      console.log(`      Subject: "${result.subject}"`);
       return result;
 
     } catch (error) {

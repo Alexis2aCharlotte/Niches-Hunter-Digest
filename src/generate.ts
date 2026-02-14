@@ -64,7 +64,9 @@ export async function generateDigestNewsletter(): Promise<void> {
     console.log('🤖 Step 2: Generating AI digest from recent newsletters...');
     const newsletterContents = newsletters.map(nl => nl.content);
     const digest = await generateDigest(newsletterContents);
-    console.log(`   ✅ Digest generated: ${digest.niches.length} niches`);
+    console.log(`   ✅ Digest generated:`);
+    console.log(`      Featured: ${digest.featured.emoji} ${digest.featured.name}`);
+    console.log(`      Hidden: ${digest.hidden.length} niches`);
     console.log(`   📌 Subject: "${digest.subject}"`);
     console.log('');
 
@@ -107,8 +109,8 @@ export async function generateDigestNewsletter(): Promise<void> {
 
 📌 ${digest.subject}
 
-🎯 Niches in digest:
-${digest.niches.map(n => `• ${n.emoji} ${n.name} (${n.potential})`).join('\n')}
+🔥 Featured: ${digest.featured.emoji} ${digest.featured.name}
+🔒 Hidden: ${digest.hidden.length} niches (redacted)
 
 📊 Stats:
 • Subscribers: ${emails.length} (${subscribersTable})

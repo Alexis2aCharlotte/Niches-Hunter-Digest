@@ -1,70 +1,23 @@
-import { DigestAnalysis, DigestNiche } from '../services/openai';
+import { DigestAnalysis } from '../services/openai';
 
 const SITE_URL = process.env.SITE_URL || 'https://nicheshunter.app';
 
 /**
- * Potential level colors
+ * Generate a single hidden niche row (redacted name + hint)
  */
-const potentialColors: Record<string, string> = {
-  'massive': '#E74C3C',
-  'very high': '#E91E63',
-  'high': '#F39C12',
-  'growing fast': '#27AE60',
-  'moderate': '#3498DB',
-  'default': '#00CC6A'
-};
-
-function getPotentialColor(potential: string): string {
-  const key = potential.toLowerCase();
-  for (const [label, color] of Object.entries(potentialColors)) {
-    if (key.includes(label)) return color;
-  }
-  return potentialColors['default'];
-}
-
-/**
- * Generate a single niche teaser card
- */
-function generateNicheTeaser(niche: DigestNiche, index: number): string {
-  const color = getPotentialColor(niche.potential);
-  const number = index + 1;
-
+function generateHiddenNicheRow(hint: string): string {
   return `
-    <!-- Niche ${number} -->
     <tr>
-      <td style="padding:0 0 16px;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 12px rgba(0,0,0,0.04);">
+      <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
           <tr>
-            <td style="padding:20px 24px;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <!-- Niche name + potential badge -->
-                <tr>
-                  <td>
-                    <div style="font-size:18px;font-weight:700;color:#111;margin-bottom:8px;">
-                      ${niche.emoji} ${niche.name}
-                    </div>
-                  </td>
-                  <td style="text-align:right;vertical-align:top;">
-                    <div style="display:inline-block;background:${color};color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:0.5px;">
-                      ${niche.potential}
-                    </div>
-                  </td>
-                </tr>
-                <!-- Teaser text -->
-                <tr>
-                  <td colspan="2" style="padding-top:4px;">
-                    <p style="margin:0;font-size:14px;color:#555;line-height:1.6;">${niche.teaser}</p>
-                  </td>
-                </tr>
-                <!-- Proof point -->
-                <tr>
-                  <td colspan="2" style="padding-top:10px;">
-                    <div style="font-size:12px;color:#888;font-style:italic;">
-                      📊 ${niche.proof}
-                    </div>
-                  </td>
-                </tr>
-              </table>
+            <td style="font-size:15px;font-weight:700;color:#ccc;letter-spacing:1px;">
+              🔒 ██████████████
+            </td>
+          </tr>
+          <tr>
+            <td style="font-size:12px;color:#999;padding-top:4px;font-style:italic;">
+              ${hint}
             </td>
           </tr>
         </table>
@@ -74,7 +27,8 @@ function generateNicheTeaser(niche: DigestNiche, index: number): string {
 }
 
 /**
- * Generate the full digest HTML email
+ * Generate the full FOMO digest HTML email
+ * 1 featured niche (visible) + N hidden niches (redacted) + Pro CTA
  */
 export function generateDigestHTML(digest: DigestAnalysis): string {
   const today = new Date().toLocaleDateString('en-US', { 
@@ -84,11 +38,13 @@ export function generateDigestHTML(digest: DigestAnalysis): string {
     day: 'numeric' 
   });
 
-  // Generate niche teasers
-  let nichesHtml = '';
-  digest.niches.forEach((niche, index) => {
-    nichesHtml += generateNicheTeaser(niche, index);
-  });
+  const totalNiches = 1 + digest.hidden.length;
+
+  // Generate hidden niche rows
+  let hiddenNichesHtml = '';
+  for (const hidden of digest.hidden) {
+    hiddenNichesHtml += generateHiddenNicheRow(hidden.hint);
+  }
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -124,10 +80,10 @@ export function generateDigestHTML(digest: DigestAnalysis): string {
                   <td style="padding:32px 28px;text-align:center;">
                     <div style="font-size:13px;color:#888;margin-bottom:12px;">${today}</div>
                     <h1 style="margin:0 0 16px;font-size:24px;font-weight:800;color:#111;letter-spacing:-0.5px;line-height:1.3;">
-                      ${digest.niches.length} niches spotted this week
+                      This week in the App Store
                     </h1>
                     <p style="margin:0;font-size:15px;color:#555;line-height:1.6;">
-                      ${digest.intro}
+                      ${digest.stats_line}
                     </p>
                   </td>
                 </tr>
@@ -135,47 +91,130 @@ export function generateDigestHTML(digest: DigestAnalysis): string {
             </td>
           </tr>
 
-          <!-- Section Label -->
+          <!-- ═══════════════════════════════════════ -->
+          <!-- FEATURED NICHE (the one we reveal)     -->
+          <!-- ═══════════════════════════════════════ -->
           <tr>
-            <td style="padding:4px 0 16px;">
+            <td style="padding:4px 0 8px;">
               <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:2px;text-align:center;">
-                Trending Niches
+                🔥 Niche of the week
               </div>
             </td>
           </tr>
 
-          <!-- NICHE TEASERS -->
-          ${nichesHtml}
-
-          <!-- CTA Card - Upgrade to Pro -->
           <tr>
-            <td style="padding:8px 0 24px;">
+            <td style="padding:0 0 24px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.06);">
+                <!-- Niche header -->
+                <tr>
+                  <td style="background:#00CC6A;padding:20px 28px;">
+                    <div style="font-size:22px;font-weight:800;color:#fff;">
+                      ${digest.featured.emoji} ${digest.featured.name}
+                    </div>
+                  </td>
+                </tr>
+                <!-- Hook -->
+                <tr>
+                  <td style="padding:24px 28px 16px;">
+                    <p style="margin:0;font-size:15px;color:#333;line-height:1.7;">
+                      ${digest.featured.hook}
+                    </p>
+                  </td>
+                </tr>
+                <!-- Proof -->
+                <tr>
+                  <td style="padding:0 28px 20px;">
+                    <div style="background:#f0fdf4;border-radius:10px;padding:14px 16px;border-left:4px solid #00CC6A;">
+                      <div style="font-size:13px;color:#166534;line-height:1.5;">
+                        📊 ${digest.featured.proof}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <!-- CTA -->
+                <tr>
+                  <td style="padding:0 28px 24px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <td style="background:#111;border-radius:12px;text-align:center;">
+                          <a href="${SITE_URL}/niches" style="display:block;padding:14px 24px;color:#00FF88;font-size:14px;font-weight:700;text-decoration:none;">
+                            See the full breakdown →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ═══════════════════════════════════════ -->
+          <!-- HIDDEN NICHES (redacted, FOMO)         -->
+          <!-- ═══════════════════════════════════════ -->
+          <tr>
+            <td style="padding:4px 0 8px;">
+              <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:2px;text-align:center;">
+                📋 Also spotted this week
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 0 24px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.06);">
+                <tr>
+                  <td style="padding:24px 28px 8px;">
+                    <p style="margin:0 0 16px;font-size:14px;color:#555;line-height:1.5;">
+                      Our algorithm flagged <strong>${digest.hidden.length} other niche${digest.hidden.length > 1 ? 's' : ''}</strong> with strong indie signals:
+                    </p>
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      ${hiddenNichesHtml}
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:16px 28px 24px;">
+                    <div style="font-size:13px;color:#999;font-style:italic;text-align:center;">
+                      Pro members received the full analysis yesterday.
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ═══════════════════════════════════════ -->
+          <!-- CTA - UPGRADE TO PRO                   -->
+          <!-- ═══════════════════════════════════════ -->
+          <tr>
+            <td style="padding:0 0 24px;">
               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#111;border-radius:20px;overflow:hidden;">
                 <tr>
                   <td style="padding:32px 28px;text-align:center;">
                     <div style="font-size:11px;color:#FFD700;font-weight:700;letter-spacing:2px;margin-bottom:16px;text-transform:uppercase;">
-                      🏆 Go Pro
+                      ⚡ Don't miss the next one
                     </div>
                     <p style="font-size:18px;color:#fff;font-weight:600;line-height:1.5;margin:0 0 8px;">
-                      Want the full analysis?
+                      Get ${totalNiches} niches daily, not ${totalNiches} per week.
                     </p>
                     <p style="font-size:14px;color:#999;line-height:1.5;margin:0 0 24px;">
-                      Pro members get daily deep dives: market gaps, step-by-step strategies, competitor data, and revenue estimates for every niche.
+                      Every day, Pro members get the full playbook:
                     </p>
                     <!-- What's locked -->
                     <div style="background:#1a1a1a;border-radius:8px;padding:14px 16px;margin-bottom:24px;border:1px dashed #333;text-align:left;">
-                      <div style="font-size:13px;color:#888;line-height:1.8;">
-                        🔒 The Gap to exploit<br>
+                      <div style="font-size:13px;color:#888;line-height:2;">
+                        🔒 The gap to exploit<br>
                         🔒 Step-by-step action plan<br>
-                        🔒 Competitor deep dive & MRR<br>
-                        🔒 Keywords & ASO strategy
+                        🔒 Competitor deep dive &amp; MRR<br>
+                        🔒 Keywords &amp; ASO strategy
                       </div>
                     </div>
                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                       <tr>
                         <td style="background:#FFD700;border-radius:12px;text-align:center;">
                           <a href="${SITE_URL}/niches" style="display:block;padding:16px 24px;color:#000;font-size:15px;font-weight:700;text-decoration:none;">
-                            ${digest.cta_text} →
+                            Unlock full access →
                           </a>
                         </td>
                       </tr>
