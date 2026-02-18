@@ -81,24 +81,43 @@ export async function getRecentNewsletters(limit: number = 3): Promise<Newslette
 // ===========================================
 
 /**
- * Get all active subscribers
+ * Get all active subscribers with pagination to bypass Supabase's 1000-row default limit.
+ * Fetches in batches of 1000 until all subscribers are retrieved.
  * ⚠️  Uses SUBSCRIBERS_TABLE env var (test or production)
  */
 export async function getActiveSubscribers(): Promise<Subscriber[]> {
   const tableName = getSubscribersTable();
+  const PAGE_SIZE = 1000;
   
   console.log(`   📋 Using subscribers table: ${tableName}`);
   
-  const { data, error } = await getSupabase()
-    .from(tableName)
-    .select('*')
-    .eq('status', 'subscribed');
+  const allSubscribers: Subscriber[] = [];
+  let from = 0;
+  let hasMore = true;
 
-  if (error) {
-    console.error('Error fetching subscribers:', error);
-    throw error;
+  while (hasMore) {
+    const { data, error } = await getSupabase()
+      .from(tableName)
+      .select('*')
+      .eq('status', 'subscribed')
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error) {
+      console.error('Error fetching subscribers:', error);
+      throw error;
+    }
+
+    const batch = data || [];
+    allSubscribers.push(...batch);
+
+    if (batch.length < PAGE_SIZE) {
+      hasMore = false;
+    } else {
+      from += PAGE_SIZE;
+      console.log(`   📋 Fetched ${allSubscribers.length} subscribers so far, loading more...`);
+    }
   }
 
-  console.log(`   ✅ Found ${data?.length || 0} active subscribers`);
-  return data || [];
+  console.log(`   ✅ Found ${allSubscribers.length} active subscribers (total)`);
+  return allSubscribers;
 }
