@@ -14,7 +14,8 @@ function getResend(): Resend {
   return resend;
 }
 
-const FROM_EMAIL = 'Niches Hunter <support@arianeconcept.fr>';
+const FROM_EMAIL = 'Niches Hunter <newsletter@nicheshunter.app>';
+const REPLY_TO = 'contact@nicheshunter.app';
 const SITE_URL = process.env.SITE_URL || 'https://nicheshunter.app';
 
 /**
@@ -50,6 +51,7 @@ export async function sendDigestBatch(
       await getResend().emails.send({
         from: FROM_EMAIL,
         to: email,
+        reply_to: REPLY_TO,
         subject: subject,
         html: personalizedHtml
       });
